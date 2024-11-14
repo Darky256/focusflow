@@ -36,6 +36,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "7b5b00c2-3520-4ec8-bb7a-89e367795030"
+      }
+    },
+    "owner": "brioche02"
   }
 }
