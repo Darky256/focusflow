@@ -43,6 +43,32 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="puce"
+        options={{
+          title: "puce",
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? "checkmark-done-circle" : "checkmark-done-circle-outline"}
+              color={color}
+              size={24}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="puce_copy"
+        options={{
+          title: "puce_copy",
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? "checkmark-done-circle" : "checkmark-done-circle-outline"}
+              color={color}
+              size={24}
+            />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
