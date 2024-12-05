@@ -5,6 +5,19 @@ export default function TabLayout() {
   return (
     <Tabs screenOptions={{ tabBarActiveTintColor: "#00bdbd" }}>
       <Tabs.Screen
+        name="task"
+        options={{
+          title: "task",
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? "checkmark-done-circle" : "checkmark-done-circle-outline"}
+              color={color}
+              size={24}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="index"
         options={{
           title: "Home",
@@ -37,32 +50,6 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? "settings" : "settings-outline"}
-              color={color}
-              size={24}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="puce"
-        options={{
-          title: "puce",
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? "checkmark-done-circle" : "checkmark-done-circle-outline"}
-              color={color}
-              size={24}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="puce_copy"
-        options={{
-          title: "puce_copy",
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? "checkmark-done-circle" : "checkmark-done-circle-outline"}
               color={color}
               size={24}
             />
