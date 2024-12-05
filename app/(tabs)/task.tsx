@@ -1,67 +1,70 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  TextInput,
-  TouchableOpacity,
-  Keyboard,
-} from "react-native";
-import Task from "@/components/Task";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, TextInput } from "react-native";
+import { initDatabase, createTables, insertTask, getAllTasks, completeTask, deleteTask } from "../../assets/database/database"; // Importer les fonctions de la base
 
-export default function task() {
-  const [task, setTask] = useState();
-  const [taskItems, setTaskItems] = useState([]);
+export default function TaskScreen() {
+  const [taskName, setTaskName] = useState("");
+  const [tasks, setTasks] = useState([]);
 
-  const handleAddTask = () => {
-    Keyboard.dismiss();
-    setTaskItems([...taskItems, task]);
-    setTask(null);
+  // Initialiser la base de données et charger les tâches
+  useEffect(() => {
+    const initializeDB = async () => {
+      const db = await initDatabase();
+      await createTables(db);
+      const tasksFromDb = await getAllTasks(db);
+      setTasks(tasksFromDb);
+    };
+    initializeDB();
+  }, []);
+
+  const handleAddTask = async () => {
+    if (taskName.trim()) {
+      const db = await initDatabase();
+      await insertTask(db, taskName);
+      const tasksFromDb = await getAllTasks(db);
+      setTasks(tasksFromDb);
+      setTaskName(""); // Réinitialiser le champ de saisie
+    }
   };
 
-  const completeTask = (index) => {
-    let itmesCopy = [...taskItems];
-    itmesCopy.splice(index, 1);
-    setTaskItems(itmesCopy);
+  const handleCompleteTask = async (taskId: number) => {
+    const db = await initDatabase();
+    await completeTask(db, taskId);
+    const tasksFromDb = await getAllTasks(db);
+    setTasks(tasksFromDb);
+  };
+
+  const handleDeleteTask = async (taskId: number) => {
+    const db = await initDatabase();
+    await deleteTask(db, taskId);
+    const tasksFromDb = await getAllTasks(db);
+    setTasks(tasksFromDb);
   };
 
   return (
     <View style={styles.container}>
-      // today task
-      <View style={styles.taskWrapper}>
-        <Text style={styles.sectionTitle}>Today's task</Text>
-
-        <View style={styles.items}>
-          {taskItems.map((item, index) => {
-            return (
-              <TouchableOpacity key={index} onPress={() => completeTask(index)}>
-                <Task text={item} />
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      </View>
-      // write task
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 110 : 0}
-        style={styles.writeTaskWrapper}
-      >
-        <TextInput
-          style={styles.input}
-          placeholder={"Write a task"}
-          value={task}
-          onChangeText={(text) => setTask(text)}
-        />
-
-        <TouchableOpacity onPress={() => handleAddTask()}>
-          <View style={styles.addWrapper}>
-            <Text style={styles.addText}>+</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Add a new task"
+        value={taskName}
+        onChangeText={setTaskName}
+      />
+      <TouchableOpacity onPress={handleAddTask} style={styles.addButton}>
+        <Text style={styles.addButtonText}>+</Text>
+      </TouchableOpacity>
+      <View style={styles.taskList}>
+        {tasks.map((task) => (
+          <View key={task.id} style={styles.taskItem}>
+            <Text style={task.completed ? styles.completedTask : styles.taskText}>{task.name}</Text>
+            <TouchableOpacity onPress={() => handleCompleteTask(task.id)} style={styles.completeButton}>
+              <Text style={styles.buttonText}>✔</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleDeleteTask(task.id)} style={styles.deleteButton}>
+              <Text style={styles.buttonText}>❌</Text>
+            </TouchableOpacity>
           </View>
-        </TouchableOpacity>
-      </KeyboardAvoidingView>
+        ))}
+      </View>
     </View>
   );
 }
@@ -69,52 +72,56 @@ export default function task() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#E8EAED",
+    padding: 20,
+    backgroundColor: "#f4f4f4",
   },
-  taskWrapper: {
-    paddingTop: 80,
-    paddingHorizontal: 20,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-  },
-  items: {
-    marginTop: 30,
-  },
-
-  // Ajout de tâche
-  writeTaskWrapper: {
-    position: "absolute",
-    bottom: 60,
-    width: "100%",
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-  },
-
-  // Champs de recherche
   input: {
-    paddingVertical: 15,
-    paddingHorizontal: 15,
-    width: 250,
-    backgroundColor: "#FFF",
-    borderRadius: 60,
-    borderColor: "#C0C0C0",
+    padding: 10,
+    borderRadius: 5,
     borderWidth: 1,
+    marginBottom: 20,
   },
-  // Bouton ajouter
-  addWrapper: {
-    width: 60,
-    height: 60,
-    backgroundColor: "#FFF",
-    borderRadius: 60,
-    justifyContent: "center",
+  addButton: {
+    backgroundColor: "#4CAF50",
+    padding: 10,
+    borderRadius: 5,
     alignItems: "center",
-    borderColor: "#C0C0C0",
-    borderWidth: 1,
+    marginBottom: 20,
   },
-  addText: {
-    fontSize: 30,
+  addButtonText: {
+    color: "white",
+    fontSize: 20,
+  },
+  taskList: {
+    marginTop: 10,
+  },
+  taskItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: 10,
+    backgroundColor: "#fff",
+    borderRadius: 5,
+    marginBottom: 10,
+  },
+  taskText: {
+    fontSize: 16,
+  },
+  completedTask: {
+    fontSize: 16,
+    textDecorationLine: "line-through",
+    color: "#aaa",
+  },
+  completeButton: {
+    padding: 5,
+    backgroundColor: "#4CAF50",
+    borderRadius: 5,
+  },
+  deleteButton: {
+    padding: 5,
+    backgroundColor: "#F44336",
+    borderRadius: 5,
+  },
+  buttonText: {
+    color: "white",
   },
 });
